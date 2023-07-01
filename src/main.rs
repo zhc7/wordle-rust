@@ -1,3 +1,6 @@
+mod builtin_words;
+mod core;
+
 use console;
 use std::io::{self, Write};
 
