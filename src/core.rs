@@ -66,17 +66,18 @@ impl GameStatus {
         self.trials += 1;
         let mut status = [Status::Red; WORD_SIZE];
         let mut correct = true;
+        let mut count = self.count.clone();
         // green
         for (i, c) in word.chars().enumerate() {
             if c == self.target[i] {
                 status[i] = Status::Green;
                 self.keyboard[c as usize - BASE_CHAR as usize] = Status::Green;
+                count.entry(c).and_modify(|e| *e -= 1);
             } else {
                 correct = false;
             }
         }
         // yellow
-        let mut count = self.count.clone();
         for (i, c) in word.chars().enumerate() {
             if status[i] == Status::Red && count.contains_key(&c) && count[&c] > 0 {
                 status[i] = Status::Yellow;
