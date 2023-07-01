@@ -16,7 +16,7 @@ pub enum Status {
 }
 
 impl Status {
-    fn to_str(&self) -> &'static str {
+    pub fn to_str(&self) -> &'static str {
         match self {
             Status::Green => "G",
             Status::Yellow => "Y",
@@ -35,6 +35,7 @@ pub struct GameStatus {
     pub target: [char; WORD_SIZE],
     pub trials: u32,
     pub keyboard: [Status; ALPHABET_SIZE],
+    pub end: bool,
     count: HashMap<char, u32>,
 }
 
@@ -49,11 +50,12 @@ impl GameStatus {
             target: target.chars().collect::<Vec<char>>().try_into().unwrap(),
             trials: 0,
             keyboard: [Status::Grey; ALPHABET_SIZE],
+            end: false,
             count: map,
         }
     }
 
-    pub fn guess(&mut self, word: &str) -> Result<bool, Error> {
+    pub fn guess(&mut self, word: &str) -> Result<[Status; WORD_SIZE], Error> {
         let word = word.to_uppercase();
         if word.len() != WORD_SIZE {
             return Err(Error::InvalidWordLength);
@@ -62,11 +64,10 @@ impl GameStatus {
             return Err(Error::InvalidWord);
         }
         self.trials += 1;
-        let word = word.chars();
         let mut status = [Status::Red; WORD_SIZE];
         let mut correct = true;
         // green
-        for (i, c) in word.enumerate() {
+        for (i, c) in word.chars().enumerate() {
             if c == self.target[i] {
                 status[i] = Status::Green;
                 self.keyboard[c as usize - BASE_CHAR as usize] = Status::Green;
@@ -76,21 +77,21 @@ impl GameStatus {
         }
         // yellow
         let mut count = self.count.clone();
-        for (i, c) in word.enumerate() {
+        for (i, c) in word.chars().enumerate() {
             if status[i] == Status::Red && count[&c] > 0 {
                 status[i] = Status::Yellow;
                 let key = c as usize - BASE_CHAR as usize;
                 self.keyboard[key] = max(self.keyboard[key], Status::Yellow);
-                count[&c] -= 1;
+                count.entry(c).and_modify(|e| *e -= 1);
             }
         }
         // red
-        for (i, c) in word.enumerate() {
+        for (i, c) in word.chars().enumerate() {
             if status[i] == Status::Red {
                 let key = c as usize - BASE_CHAR as usize;
                 self.keyboard[key] = max(self.keyboard[key], Status::Red);
             }
         }
-        Ok(correct)
+        Ok(status)
     }
 }
