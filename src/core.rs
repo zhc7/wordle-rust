@@ -1,4 +1,4 @@
-use std::cmp::max;
+use std::cmp::min;
 use std::collections::HashMap;
 use crate::builtin_words::ACCEPTABLE;
 
@@ -56,13 +56,13 @@ impl GameStatus {
     }
 
     pub fn guess(&mut self, word: &str) -> Result<[Status; WORD_SIZE], Error> {
-        let word = word.to_uppercase();
         if word.len() != WORD_SIZE {
             return Err(Error::InvalidWordLength);
         }
-        if !ACCEPTABLE.contains(&word.as_str()) {
+        if !ACCEPTABLE.contains(&word.to_lowercase().as_str()) {
             return Err(Error::InvalidWord);
         }
+        let word = word.to_uppercase();
         self.trials += 1;
         let mut status = [Status::Red; WORD_SIZE];
         let mut correct = true;
@@ -78,10 +78,10 @@ impl GameStatus {
         // yellow
         let mut count = self.count.clone();
         for (i, c) in word.chars().enumerate() {
-            if status[i] == Status::Red && count[&c] > 0 {
+            if status[i] == Status::Red && count.contains_key(&c) && count[&c] > 0 {
                 status[i] = Status::Yellow;
                 let key = c as usize - BASE_CHAR as usize;
-                self.keyboard[key] = max(self.keyboard[key], Status::Yellow);
+                self.keyboard[key] = min(self.keyboard[key], Status::Yellow);
                 count.entry(c).and_modify(|e| *e -= 1);
             }
         }
@@ -89,7 +89,7 @@ impl GameStatus {
         for (i, c) in word.chars().enumerate() {
             if status[i] == Status::Red {
                 let key = c as usize - BASE_CHAR as usize;
-                self.keyboard[key] = max(self.keyboard[key], Status::Red);
+                self.keyboard[key] = min(self.keyboard[key], Status::Red);
             }
         }
         if correct {

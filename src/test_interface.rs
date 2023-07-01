@@ -5,10 +5,10 @@ const MAX_TRIAL: u32 = 6;
 
 pub fn test_mode(target: &str) {
     let mut game = GameStatus::new(target);
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).unwrap();
     while game.trials < MAX_TRIAL {
-        match game.guess(&input) {
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).unwrap();
+        match game.guess(&input.trim()) {
             Ok(result) => {
                 for s in result {
                     print!("{}", s.to_str());
