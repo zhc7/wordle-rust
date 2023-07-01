@@ -1,5 +1,6 @@
 mod builtin_words;
 mod core;
+mod test_interface;
 
 use console;
 use std::io::{self, Write};
@@ -14,7 +15,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             console::style("colorful characters").bold().blink().blue()
         );
     } else {
-        println!("I am not in a tty. Please print according to test requirements!");
+        test_interface::test_mode("HELLO");
     }
 
     if is_tty {
@@ -30,7 +31,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for arg in std::env::args() {
         print!("{} ", arg);
     }
-    println!("");
+    println!();
     // TODO: parse the arguments in `args`
 
     Ok(())
