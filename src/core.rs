@@ -92,6 +92,9 @@ impl GameStatus {
                 self.keyboard[key] = max(self.keyboard[key], Status::Red);
             }
         }
+        if correct {
+            self.end = true;
+        }
         Ok(status)
     }
 }
