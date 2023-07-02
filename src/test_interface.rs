@@ -8,14 +8,16 @@ pub fn test_mode(target: &str, difficult: bool) {
     while game.trials < MAX_TRIAL {
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
+        if difficult {
+            if let Ok(b) = game.check(&input) {
+                if !b {
+                    println!("INVALID");
+                    continue;
+                }
+            }
+        }
         match game.guess(&input.trim()) {
             Ok(result) => {
-                if difficult {
-                    if !game.check(input.as_str()).unwrap() {
-                        println!("INVALID");
-                        continue;
-                    }
-                }
                 for s in result {
                     print!("{}", s.to_str());
                 }

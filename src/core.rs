@@ -95,7 +95,7 @@ impl GameStatus {
             }
         }
         for (c, count) in yellow_count.iter() {
-            self.yellow_count.entry(*c).and_modify(|e| *e = max(*e, *count));
+            self.yellow_count.entry(*c).and_modify(|e| *e = max(*e, *count)).or_insert(*count);
         }
         // red
         for (i, c) in word.chars().enumerate() {
@@ -119,7 +119,7 @@ impl GameStatus {
         }
         let word = word.to_uppercase();
         for (i, c) in word.chars().enumerate() {
-            if c != self.green_place[i] {
+            if self.green_place[i] != 0 as char && c != self.green_place[i] {
                 return Ok(false);
             }
         }

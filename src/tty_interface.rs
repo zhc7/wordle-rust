@@ -35,14 +35,16 @@ pub fn tty_mode(target: &str, difficult: bool) {
         io::Write::flush(&mut io::stdout()).unwrap();
         io::stdin().read_line(&mut input).unwrap();
         let input = input.trim().to_uppercase();
+        if difficult {
+            if let Ok(b) = game.check(&input) {
+                if !b {
+                    println!("{}",console::style("Invalid in difficult mode.").bold().yellow().bright());
+                    continue;
+                }
+            }
+        }
         match game.guess(&input) {
             Ok(result) => {
-                if difficult {
-                    if !game.check(input.as_str()).unwrap() {
-                        println!("{}",console::style("Not valid in difficult mode.").bold().yellow().bright());
-                        continue;
-                    }
-                }
                 for (c, s) in zip(input.chars(), result) {
                     print!("{}", to_colorful_char(c.to_string(), &s));
                 }
