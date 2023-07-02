@@ -4,7 +4,7 @@ use crate::builtin_words::ACCEPTABLE;
 
 const WORD_SIZE: usize = 5;
 const ALPHABET_SIZE: usize = 26;
-const BASE_CHAR: char = 'A';
+pub(crate) const BASE_CHAR: char = 'A';
 
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
