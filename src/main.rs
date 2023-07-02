@@ -45,9 +45,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let target = target.trim().to_uppercase();
     let target = target.as_str();
     if is_tty {
-        tty_interface::tty_mode(target);
+        tty_interface::tty_mode(target, args.difficult);
     } else {
-        test_interface::test_mode(target);
+        test_interface::test_mode(target, args.difficult);
     }
     Ok(())
 }

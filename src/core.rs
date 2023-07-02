@@ -1,4 +1,4 @@
-use std::cmp::min;
+use std::cmp::{max, min};
 use std::collections::HashMap;
 use crate::builtin_words::ACCEPTABLE;
 
@@ -26,6 +26,7 @@ impl Status {
     }
 }
 
+#[derive(Debug)]
 pub enum Error {
     InvalidWordLength,
     InvalidWord,
@@ -37,6 +38,8 @@ pub struct GameStatus {
     pub keyboard: [Status; ALPHABET_SIZE],
     pub end: bool,
     count: HashMap<char, u32>,
+    green_place: [char; WORD_SIZE],
+    yellow_count: HashMap<char, u32>,
 }
 
 impl GameStatus {
@@ -52,6 +55,8 @@ impl GameStatus {
             keyboard: [Status::Grey; ALPHABET_SIZE],
             end: false,
             count: map,
+            green_place: [0 as char; WORD_SIZE],
+            yellow_count: HashMap::new(),
         }
     }
 
@@ -73,18 +78,24 @@ impl GameStatus {
                 status[i] = Status::Green;
                 self.keyboard[c as usize - BASE_CHAR as usize] = Status::Green;
                 count.entry(c).and_modify(|e| *e -= 1);
+                self.green_place[i] = c;
             } else {
                 correct = false;
             }
         }
         // yellow
+        let mut yellow_count = HashMap::new();
         for (i, c) in word.chars().enumerate() {
             if status[i] == Status::Red && count.contains_key(&c) && count[&c] > 0 {
                 status[i] = Status::Yellow;
                 let key = c as usize - BASE_CHAR as usize;
                 self.keyboard[key] = min(self.keyboard[key], Status::Yellow);
                 count.entry(c).and_modify(|e| *e -= 1);
+                *yellow_count.entry(c).or_insert(0) += 1;
             }
+        }
+        for (c, count) in yellow_count.iter() {
+            self.yellow_count.entry(*c).and_modify(|e| *e = max(*e, *count));
         }
         // red
         for (i, c) in word.chars().enumerate() {
@@ -97,5 +108,26 @@ impl GameStatus {
             self.end = true;
         }
         Ok(status)
+    }
+
+    pub fn check(&self, word: &str) -> Result<bool, Error> {
+        if word.len() != WORD_SIZE {
+            return Err(Error::InvalidWordLength);
+        }
+        if !ACCEPTABLE.contains(&word.to_lowercase().as_str()) {
+            return Err(Error::InvalidWord);
+        }
+        let word = word.to_uppercase();
+        for (i, c) in word.chars().enumerate() {
+            if c != self.green_place[i] {
+                return Ok(false);
+            }
+        }
+        for (c, count) in self.yellow_count.iter() {
+            if word.matches(*c).count() < *count as usize {
+                return Ok(false);
+            }
+        }
+        Ok(true)
     }
 }

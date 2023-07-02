@@ -18,7 +18,7 @@ fn to_colorful_char(c: String, status: &Status) -> console::StyledObject<String>
 }
 
 
-pub fn tty_mode(target: &str) {
+pub fn tty_mode(target: &str, difficult: bool) {
     match fs::read_to_string(WORDLE_RES) {
         Ok(content) => {
             println!("{}", console::style(content).bold().blue());
@@ -37,6 +37,12 @@ pub fn tty_mode(target: &str) {
         let input = input.trim().to_uppercase();
         match game.guess(&input) {
             Ok(result) => {
+                if difficult {
+                    if !game.check(input.as_str()).unwrap() {
+                        println!("{}",console::style("Not valid in difficult mode.").bold().yellow().bright());
+                        continue;
+                    }
+                }
                 for (c, s) in zip(input.chars(), result) {
                     print!("{}", to_colorful_char(c.to_string(), &s));
                 }
@@ -58,5 +64,5 @@ pub fn tty_mode(target: &str) {
             return;
         }
     }
-    println!("{}\nThe answer is {}",console::style("FAILED.").bold().red().dim(), target);
+    println!("{}\nThe answer is {}",console::style("FAILED.").bold().red().dim(), console::style(target).bold().cyan());
 }
