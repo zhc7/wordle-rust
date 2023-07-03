@@ -1,17 +1,19 @@
+use std::collections::HashMap;
+use std::io;
+
+use clap::Parser;
+use rand::seq::SliceRandom;
+
+use crate::builtin_words::FINAL;
+use crate::core::GameStatus;
+use crate::interface::{Interface, run};
+
 mod builtin_words;
 mod core;
 mod test_interface;
 mod tty_interface;
 mod interface;
 
-
-use std::collections::HashMap;
-use std::io;
-use crate::builtin_words::FINAL;
-use clap::Parser;
-use rand::seq::SliceRandom;
-use crate::core::GameStatus;
-use crate::interface::{Interface, run};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = "Wordle is a game where you guess a 5-letter word.")]
@@ -52,11 +54,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     let args = Args::parse();
     if args.word == None {
+        // statistics
         let mut used_words: Vec<&str> = Vec::new();
         let mut guess_count: HashMap<String, u32> = HashMap::new();
         let mut wins: u32 = 0;
         let mut total: u32 = 0;
         let mut trials: u32 = 0;
+
+        // multiple rounds loop
         loop {
             let (game, guesses, win) = if args.random {
                 let mut rng = rand::thread_rng();
@@ -71,18 +76,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 io::stdin().read_line(&mut target)?;
                 game_round(&target, &args, &mut interface)
             };
-            for guess in guesses {
-                *guess_count.entry(guess).or_insert(0) += 1;
-            }
-            wins += win as u32;
-            total += 1;
-            trials += game.trials;
+
+            // statistics
             if args.stats {
+                wins += win as u32;
+                total += 1;
+                trials += game.trials;
+                for guess in guesses {
+                    *guess_count.entry(guess).or_insert(0) += 1;
+                }
                 // print top five words
                 let mut top_five: Vec<(&String, &u32)> = guess_count.iter().collect();
                 top_five.sort_by(|a, b| b.1.cmp(a.1).then(a.0.cmp(b.0)));
                 interface.print_stats(&top_five.iter().map(|(word, _)| String::from(*word)).collect(), wins, total, trials);
             }
+
+            // whether next round
             let mut next = String::new();
             match io::stdin().read_line(&mut next) {
                 Ok(0) => break,
@@ -90,7 +99,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     if next == "n" {
                         break;
                     }
-                },
+                }
                 _ => {}
             }
         }

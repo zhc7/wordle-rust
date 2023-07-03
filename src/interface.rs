@@ -1,4 +1,5 @@
 use std::io;
+
 use crate::core::GameStatus;
 
 pub const MAX_TRIAL: u32 = 6;

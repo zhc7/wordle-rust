@@ -1,8 +1,10 @@
-use crate::core::{GameStatus, Status, Error, BASE_CHAR};
 use std::fs;
 use std::io::Write;
 use std::iter::zip;
+
 use console;
+
+use crate::core::{BASE_CHAR, Error, GameStatus, Status};
 use crate::interface::{Interface, MAX_TRIAL};
 
 const WORDLE_RES: &str = "res/wordle.txt";
@@ -34,7 +36,7 @@ impl Interface for TTYInterface {
         match fs::read_to_string(WORDLE_RES) {
             Ok(content) => {
                 println!("{}", console::style(content).bold().blue());
-            },
+            }
             Err(error) => {
                 println!("{}", error);
                 println!("{}", console::style("WORDLE").bold().italic().cyan());
@@ -46,7 +48,7 @@ impl Interface for TTYInterface {
     }
 
     fn difficult_message(&mut self) {
-        println!("{}",console::style("Invalid in difficult mode.").bold().yellow());
+        println!("{}", console::style("Invalid in difficult mode.").bold().yellow());
     }
 
     fn guess(&mut self, word: &str, game: &mut GameStatus) {
@@ -62,10 +64,10 @@ impl Interface for TTYInterface {
                 println!();
             }
             Err(Error::InvalidWord) => {
-                println!("{}",console::style("Not a word.").bold().yellow());
-            },
+                println!("{}", console::style("Not a word.").bold().yellow());
+            }
             Err(Error::InvalidWordLength) => {
-                println!("{}",console::style("Invalid length.").bold().yellow());
+                println!("{}", console::style("Invalid length.").bold().yellow());
             }
         }
         if !game.end {
@@ -77,9 +79,9 @@ impl Interface for TTYInterface {
 
     fn end(&mut self, game: &GameStatus) {
         if game.end {
-            println!("{} in {}",console::style("CORRECT!").bold().italic().green(), game.trials);
+            println!("{} in {}", console::style("CORRECT!").bold().italic().green(), game.trials);
         } else {
-            println!("{}\nThe answer is {}",console::style("FAILED").bold().red().dim(), self.target);
+            println!("{}\nThe answer is {}", console::style("FAILED").bold().red().dim(), self.target);
         }
     }
 

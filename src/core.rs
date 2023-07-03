@@ -1,5 +1,6 @@
 use std::cmp::{max, min};
 use std::collections::HashMap;
+
 use crate::builtin_words::ACCEPTABLE;
 
 const WORD_SIZE: usize = 5;
