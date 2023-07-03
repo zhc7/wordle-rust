@@ -109,7 +109,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             if args.stats {
                 wins += win as u32;
                 total += 1;
-                trials += game.trials;
+                if win {
+                    trials += game.trials;
+                }
                 for guess in guesses {
                     *guess_count.entry(guess).or_insert(0) += 1;
                 }
