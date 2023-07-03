@@ -10,7 +10,7 @@ pub trait Interface {
     fn end(&mut self, game: &GameStatus);
 }
 
-fn run<T: Interface>(mut interface: T, target: &str, difficult: bool) -> GameStatus {
+pub fn run<T: Interface>(mut interface: T, target: &str, difficult: bool) -> GameStatus {
     interface.start(target);
     let mut game = GameStatus::new(target);
     while game.trials < MAX_TRIAL {
