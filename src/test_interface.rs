@@ -1,22 +1,29 @@
-use std::io;
 use crate::core::GameStatus;
+use crate::interface::Interface;
 
-const MAX_TRIAL: u32 = 6;
+pub struct TestInterface {
+    target: String,
+}
 
-pub fn test_mode(target: &str, difficult: bool) {
-    let mut game = GameStatus::new(target);
-    while game.trials < MAX_TRIAL {
-        let mut input = String::new();
-        io::stdin().read_line(&mut input).unwrap();
-        if difficult {
-            if let Ok(b) = game.check(&input) {
-                if !b {
-                    println!("INVALID");
-                    continue;
-                }
-            }
+impl TestInterface {
+    pub fn new() -> Self {
+        Self {
+            target: String::new(),
         }
-        match game.guess(&input.trim()) {
+    }
+}
+
+impl Interface for TestInterface {
+    fn start(&mut self, target: &str) {
+        self.target = target.to_string();
+    }
+
+    fn difficult_message(&mut self) {
+        println!("INVALID");
+    }
+
+    fn guess(&mut self, word: &str, game: &mut GameStatus) {
+        match game.guess(&word) {
             Ok(result) => {
                 for s in result {
                     print!("{}", s.to_str());
@@ -31,10 +38,13 @@ pub fn test_mode(target: &str, difficult: bool) {
                 println!("INVALID");
             }
         }
+    }
+
+    fn end(&mut self, game: &GameStatus) {
         if game.end {
             println!("CORRECT {}", game.trials);
-            return;
+        } else {
+            println!("FAILED {}", self.target);
         }
     }
-    println!("FAILED {}", target);
 }

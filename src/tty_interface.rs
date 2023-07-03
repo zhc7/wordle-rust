@@ -1,8 +1,8 @@
 use crate::core::{GameStatus, Status, Error, BASE_CHAR};
-use std::io;
 use std::fs;
 use std::iter::zip;
 use console;
+use crate::interface::Interface;
 
 
 const MAX_TRIAL: u32 = 6;
@@ -17,35 +17,40 @@ fn to_colorful_char(c: String, status: &Status) -> console::StyledObject<String>
     }
 }
 
+pub struct TTYInterface {
+    target: String,
+}
 
-pub fn tty_mode(target: &str, difficult: bool) {
-    match fs::read_to_string(WORDLE_RES) {
-        Ok(content) => {
-            println!("{}", console::style(content).bold().blue());
-        },
-        Err(error) => {
-            println!("{}", error);
-            println!("{}", console::style("WORDLE").bold().italic().cyan());
+impl TTYInterface {
+    pub fn new() -> Self {
+        Self {
+            target: String::new(),
         }
     }
-    let mut game = GameStatus::new(target);
-    while game.trials < MAX_TRIAL {
-        let mut input = String::new();
-        print!("{} trails left: ", MAX_TRIAL - game.trials);
-        io::Write::flush(&mut io::stdout()).unwrap();
-        io::stdin().read_line(&mut input).unwrap();
-        let input = input.trim().to_uppercase();
-        if difficult {
-            if let Ok(b) = game.check(&input) {
-                if !b {
-                    println!("{}",console::style("Invalid in difficult mode.").bold().yellow().bright());
-                    continue;
-                }
+}
+
+impl Interface for TTYInterface {
+    fn start(&mut self, target: &str) {
+        self.target = target.to_string();
+        match fs::read_to_string(WORDLE_RES) {
+            Ok(content) => {
+                println!("{}", console::style(content).bold().blue());
+            },
+            Err(error) => {
+                println!("{}", error);
+                println!("{}", console::style("WORDLE").bold().italic().cyan());
             }
         }
-        match game.guess(&input) {
+    }
+
+    fn difficult_message(&mut self) {
+        println!("{}",console::style("Invalid in difficult mode.").bold().yellow());
+    }
+
+    fn guess(&mut self, word: &str, game: &mut GameStatus) {
+        match game.guess(&word) {
             Ok(result) => {
-                for (c, s) in zip(input.chars(), result) {
+                for (c, s) in zip(word.chars(), result) {
                     print!("{}", to_colorful_char(c.to_string(), &s));
                 }
                 print!(" ");
@@ -61,10 +66,13 @@ pub fn tty_mode(target: &str, difficult: bool) {
                 println!("{}",console::style("Invalid length.").bold().yellow());
             }
         }
+    }
+
+    fn end(&mut self, game: &GameStatus) {
         if game.end {
             println!("{} in {}",console::style("CORRECT!").bold().italic().green(), game.trials);
-            return;
+        } else {
+            println!("{}\nThe answer is {}",console::style("FAILED").bold().red().dim(), self.target);
         }
     }
-    println!("{}\nThe answer is {}",console::style("FAILED.").bold().red().dim(), console::style(target).bold().cyan());
 }
