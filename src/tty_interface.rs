@@ -85,7 +85,7 @@ impl Interface for TTYInterface {
         }
     }
 
-    fn print_stats(&mut self, top_words: &Vec<String>, wins: u32, total: u32, trials: u32) {
+    fn print_stats(&mut self, top_words: &Vec<(&String, &u32)>, wins: u32, total: u32, trials: u32) {
         println!("{} {} {} {} {} {:.2}",
                  console::style("Wins").bold().green(),
                  wins,
@@ -94,11 +94,11 @@ impl Interface for TTYInterface {
                  console::style("Average trials").bold().cyan(),
                  trials as f64 / total as f64);
         println!("{}", console::style("Top 5 words").bold().cyan());
-        for (i, word) in top_words.iter().enumerate() {
+        for (i, (word, count)) in top_words.iter().enumerate() {
             if i >= 5 {
                 break;
             }
-            print!("{} ", word);
+            print!("{} {} ", word, count);
         }
         println!();
     }

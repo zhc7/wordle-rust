@@ -116,7 +116,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 // print top five words
                 let mut top_five: Vec<(&String, &u32)> = guess_count.iter().collect();
                 top_five.sort_by(|a, b| b.1.cmp(a.1).then(a.0.cmp(b.0)));
-                interface.print_stats(&top_five.iter().map(|(word, _)| String::from(*word)).collect(), wins, total, trials);
+                interface.print_stats(&top_five, wins, total, trials);
             }
 
             // whether next round

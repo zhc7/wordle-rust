@@ -9,7 +9,7 @@ pub trait Interface {
     fn difficult_message(&mut self);
     fn guess(&mut self, word: &str, game: &mut GameStatus);
     fn end(&mut self, game: &GameStatus);
-    fn print_stats(&mut self, top_words: &Vec<String>, wins: u32, total: u32, trials: u32);
+    fn print_stats(&mut self, top_words: &Vec<(&String, &u32)>, wins: u32, total: u32, trials: u32);
 }
 
 
@@ -20,7 +20,8 @@ pub fn run(interface: &mut Box<dyn Interface>, target: &str, difficult: bool) ->
     while game.trials < MAX_TRIAL {
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
-        guesses.push(input.trim().to_string());
+        let input = input.trim().to_uppercase();
+        guesses.push(input.clone());
         if difficult {
             if let Ok(b) = game.check(&input) {
                 if !b {
