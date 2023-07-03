@@ -33,6 +33,14 @@ struct Args {
     /// print status
     #[arg(short = Some('t'), long, default_value_t = false)]
     stats: bool,
+
+    /// rounds when starting
+    #[arg(short, long, default_value_t = 1)]
+    day: usize,
+
+    /// random seed
+    #[arg(short, long)]
+    seed: Option<u64>,
 }
 
 
@@ -53,6 +61,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         interface = Box::new(test_interface::TestInterface::new());
     }
     let args = Args::parse();
+    let mut day = args.day;
     if args.word == None {
         // statistics
         let mut used_words: Vec<&str> = Vec::new();
@@ -61,16 +70,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut total: u32 = 0;
         let mut trials: u32 = 0;
 
+        // random init
+        let v_tmp = FINAL
+            .iter()
+            .map(|s| String::from(*s))
+            .collect::<Vec<String>>();
+        let mut dict: Vec<&String> = v_tmp.iter().collect();
+        if args.random {
+            if let Some(seed) = args.seed {
+                let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(seed);
+                dict.shuffle(&mut rng);
+            } else {
+                dict.shuffle(&mut rand::thread_rng());
+            }
+        }
+
         // multiple rounds loop
         loop {
             let (game, guesses, win) = if args.random {
-                let mut rng = rand::thread_rng();
-                let mut target = FINAL.choose(&mut rng).unwrap();
-                while used_words.contains(target) {
-                    target = FINAL.choose(&mut rng).unwrap();
-                }
-                used_words.push(*target);
-                game_round(&target.to_string(), &args, &mut interface)
+                let target = dict[day - 1];
+                used_words.push(target);
+                game_round(&target, &args, &mut interface)
             } else {
                 let mut target = String::new();
                 io::stdin().read_line(&mut target)?;
@@ -102,6 +122,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 _ => {}
             }
+            day += 1;
         }
     } else {
         game_round(&args.word.clone().unwrap(), &args, &mut interface);
