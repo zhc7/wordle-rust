@@ -92,7 +92,7 @@ impl Interface for TTYInterface {
                  console::style("Losses").bold().red(),
                  total - wins,
                  console::style("Average trials").bold().cyan(),
-                 trials as f64 / total as f64);
+                 trials as f64 / wins as f64);
         println!("{}", console::style("Top 5 words").bold().cyan());
         for (i, (word, count)) in top_words.iter().enumerate() {
             if i >= 5 {

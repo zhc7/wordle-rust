@@ -49,7 +49,7 @@ impl Interface for TestInterface {
     }
 
     fn print_stats(&mut self, top_words: &Vec<(&String, &u32)>, wins: u32, total: u32, trials: u32) {
-        println!("{} {} {:.2}", wins, total - wins, trials as f64 / total as f64);
+        println!("{} {} {:.2}", wins, total - wins, trials as f64 / wins as f64);
         for (i, (word, count)) in top_words.iter().enumerate() {
             if i >= 5 {
                 break;
