@@ -47,4 +47,15 @@ impl Interface for TestInterface {
             println!("FAILED {}", self.target);
         }
     }
+
+    fn print_stats(&mut self, top_words: &Vec<String>, wins: u32, total: u32, trials: u32) {
+        println!("{} {} {:.2}", wins, total - wins, trials as f64 / total as f64);
+        for (i, word) in top_words.iter().enumerate() {
+            if i >= 5 {
+                break;
+            }
+            print!("{} ", word);
+        }
+        println!();
+    }
 }

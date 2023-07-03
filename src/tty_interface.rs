@@ -1,11 +1,10 @@
 use crate::core::{GameStatus, Status, Error, BASE_CHAR};
 use std::fs;
+use std::io::Write;
 use std::iter::zip;
 use console;
-use crate::interface::Interface;
+use crate::interface::{Interface, MAX_TRIAL};
 
-
-const MAX_TRIAL: u32 = 6;
 const WORDLE_RES: &str = "res/wordle.txt";
 
 fn to_colorful_char(c: String, status: &Status) -> console::StyledObject<String> {
@@ -41,6 +40,9 @@ impl Interface for TTYInterface {
                 println!("{}", console::style("WORDLE").bold().italic().cyan());
             }
         }
+        // print and flush
+        print!("Start with your first guess: ");
+        std::io::stdout().flush().unwrap();
     }
 
     fn difficult_message(&mut self) {
@@ -66,6 +68,11 @@ impl Interface for TTYInterface {
                 println!("{}",console::style("Invalid length.").bold().yellow());
             }
         }
+        if !game.end {
+            // print and flush
+            print!("{} chances left: ", MAX_TRIAL - game.trials);
+            std::io::stdout().flush().unwrap();
+        }
     }
 
     fn end(&mut self, game: &GameStatus) {
@@ -74,5 +81,23 @@ impl Interface for TTYInterface {
         } else {
             println!("{}\nThe answer is {}",console::style("FAILED").bold().red().dim(), self.target);
         }
+    }
+
+    fn print_stats(&mut self, top_words: &Vec<String>, wins: u32, total: u32, trials: u32) {
+        println!("{} {} {} {} {} {:.2}",
+                 console::style("Wins").bold().green(),
+                 wins,
+                 console::style("Losses").bold().red(),
+                 total - wins,
+                 console::style("Average trials").bold().cyan(),
+                 trials as f64 / total as f64);
+        println!("{}", console::style("Top 5 words").bold().cyan());
+        for (i, word) in top_words.iter().enumerate() {
+            if i >= 5 {
+                break;
+            }
+            print!("{} ", word);
+        }
+        println!();
     }
 }
