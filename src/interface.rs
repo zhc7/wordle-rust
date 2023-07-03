@@ -35,6 +35,6 @@ pub fn run(interface: &mut Box<dyn Interface>, target: &str, difficult: bool) ->
         }
     }
     interface.end(&mut game);
-    let win = !game.end;
+    let win = game.end;
     (game, guesses, win)
 }
