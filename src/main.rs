@@ -41,6 +41,14 @@ struct Args {
     /// random seed
     #[arg(short, long)]
     seed: Option<u64>,
+
+    /// use custom target word set
+    #[arg(short, long)]
+    final_set: Option<String>,
+
+    /// use custom dictionary
+    #[arg(short, long)]
+    acceptable_set: Option<String>,
 }
 
 
@@ -55,7 +63,7 @@ fn game_round(target: &String, args: &Args, interface: &mut Box<dyn Interface>) 
 /// The main function for the Wordle game, implement your own logic here
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut interface: Box<dyn Interface>;
-    if atty::is(atty::Stream::Stdout) {
+    if atty::is(atty::Stream::Stdout) && false {
         interface = Box::new(tty_interface::TTYInterface::new());
     } else {
         interface = Box::new(test_interface::TestInterface::new());
@@ -116,7 +124,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             match io::stdin().read_line(&mut next) {
                 Ok(0) => break,
                 Ok(_) => {
-                    if next == "n" {
+                    if next.trim() == "N" {
                         break;
                     }
                 }
