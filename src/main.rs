@@ -16,7 +16,7 @@ mod tty_interface;
 mod interface;
 
 
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Deserialize)]
 #[command(author, version, about, long_about = "Wordle is a game where you guess a 5-letter word.")]
 struct Args {
     /// Target word to guess, overrides random mode
@@ -54,8 +54,28 @@ struct Args {
     /// load and save game state from and to JSON file
     #[arg(short = Some('S'), long)]
     state: Option<String>,
+
+    /// load arguments from JSON file
+    #[arg(short, long)]
+    config:Option<String>,
 }
 
+impl Args {
+    fn merge(self, other: Args) -> Self {
+        Self {
+            word: self.word.or(other.word),
+            random: self.random || other.random,
+            difficult: self.difficult || other.difficult,
+            stats: self.stats || other.stats,
+            day: if self.day == 1 { other.day } else { self.day },
+            seed: self.seed.or(other.seed),
+            final_set: self.final_set.or(other.final_set),
+            acceptable_set: self.acceptable_set.or(other.acceptable_set),
+            state: self.state.or(other.state),
+            config: self.config.or(other.config),
+        }
+    }
+}
 
 #[derive(Serialize, Deserialize, Clone)]
 struct SingleGameState {
@@ -94,7 +114,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // arg parsing
-    let args = Args::parse();
+    let cmd_args = Args::parse();
+    let args = if let Some(path) = &cmd_args.config {
+        let config: Args = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+        cmd_args.merge(config)
+    } else {
+        cmd_args
+    };
     let mut day = args.day;
     let final_set: Vec<String> = if let Some(path) = &args.final_set {
         std::fs::read_to_string(path)
