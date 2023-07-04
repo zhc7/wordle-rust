@@ -65,10 +65,10 @@ impl<'a> GameStatus<'a> {
         if word.len() != WORD_SIZE {
             return Err(Error::InvalidWordLength);
         }
-        if !self.acceptable.contains(&word.to_lowercase()) {
+        let word = word.to_uppercase();
+        if !self.acceptable.contains(&word) {
             return Err(Error::InvalidWord);
         }
-        let word = word.to_uppercase();
         self.trials += 1;
         let mut status = [Status::Red; WORD_SIZE];
         let mut correct = true;
@@ -115,10 +115,10 @@ impl<'a> GameStatus<'a> {
         if word.len() != WORD_SIZE {
             return Err(Error::InvalidWordLength);
         }
-        if !self.acceptable.contains(&word.to_lowercase()) {
+        let word = word.to_uppercase();
+        if !self.acceptable.contains(&word) {
             return Err(Error::InvalidWord);
         }
-        let word = word.to_uppercase();
         for (i, c) in word.chars().enumerate() {
             if self.green_place[i] != 0 as char && c != self.green_place[i] {
                 return Ok(false);
