@@ -172,7 +172,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let loaded_states: GameState = serde_json::from_str(&std::fs::read_to_string(path)?)?;
             wins = loaded_states.games
                 .iter()
-                .filter(|g| g.guesses.len() == 5)
+                .filter(|g| g.guesses.last() == Some(&g.answer))
                 .count() as u32;
             total = loaded_states.total_rounds;
             trials = loaded_states.games
