@@ -1,4 +1,4 @@
-use crate::core::GameStatus;
+use crate::core::{Error, GameStatus, Status};
 use crate::interface::Interface;
 
 pub struct TestInterface {
@@ -22,8 +22,9 @@ impl Interface for TestInterface {
         println!("INVALID");
     }
 
-    fn guess(&mut self, word: &str, game: &mut GameStatus) {
-        match game.guess(&word) {
+    fn guess(&mut self, word: &str, game: &mut GameStatus) -> Result<[Status; 5], Error> {
+        let r = game.guess(&word);
+        match r {
             Ok(result) => {
                 for s in result {
                     print!("{}", s.to_str());
@@ -38,6 +39,7 @@ impl Interface for TestInterface {
                 println!("INVALID");
             }
         }
+        r
     }
 
     fn end(&mut self, game: &GameStatus) {

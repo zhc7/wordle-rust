@@ -51,8 +51,9 @@ impl Interface for TTYInterface {
         println!("{}", console::style("Invalid in difficult mode.").bold().yellow());
     }
 
-    fn guess(&mut self, word: &str, game: &mut GameStatus) {
-        match game.guess(&word) {
+    fn guess(&mut self, word: &str, game: &mut GameStatus) -> Result<[Status; 5], Error> {
+        let r = game.guess(&word);
+        match r {
             Ok(result) => {
                 for (c, s) in zip(word.chars(), result) {
                     print!("{}", to_colorful_char(c.to_string(), &s));
@@ -75,6 +76,7 @@ impl Interface for TTYInterface {
             print!("{} chances left: ", MAX_TRIAL - game.trials);
             std::io::stdout().flush().unwrap();
         }
+        r
     }
 
     fn end(&mut self, game: &GameStatus) {
