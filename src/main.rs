@@ -57,7 +57,7 @@ struct Args {
 
     /// load arguments from JSON file
     #[arg(short, long)]
-    config:Option<String>,
+    config: Option<String>,
 }
 
 impl Args {
