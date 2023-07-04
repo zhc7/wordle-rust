@@ -3,6 +3,7 @@ use std::io;
 
 use clap::Parser;
 use rand::seq::SliceRandom;
+use serde::{Deserialize, Serialize};
 
 use crate::builtin_words::{ACCEPTABLE, FINAL};
 use crate::core::GameStatus;
@@ -49,6 +50,23 @@ struct Args {
     /// use custom dictionary
     #[arg(short, long)]
     acceptable_set: Option<String>,
+
+    /// load and save game state from and to JSON file
+    #[arg(short = Some('S'), long)]
+    state: Option<String>,
+}
+
+
+#[derive(Serialize, Deserialize, Clone)]
+struct SingleGameState {
+    answer: String,
+    guesses: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct GameState {
+    total_rounds: u32,
+    games: Vec<SingleGameState>,
 }
 
 
@@ -87,6 +105,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         FINAL.iter().map(|s| String::from(*s)).collect()
     };
+    // dataset operation
     let mut final_set: Vec<String> = final_set.iter().map(|s| s.to_uppercase()).collect();
     final_set.sort();
     let acceptable_set: Vec<String> = if let Some(path) = &args.acceptable_set {
@@ -110,11 +129,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     if args.word == None {
         // statistics
-        let mut used_words: Vec<&str> = Vec::new();
         let mut guess_count: HashMap<String, u32> = HashMap::new();
         let mut wins: u32 = 0;
         let mut total: u32 = 0;
         let mut trials: u32 = 0;
+
+        // load state
+        if let Some(path) = &args.state {
+            let state: GameState = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+            wins = state.games.iter().filter(|g| g.guesses.len() == 5).count() as u32;
+            total = state.total_rounds;
+            day += total as usize;
+            trials = state.games.iter().map(|g| g.guesses.len() as u32).sum();
+            for game in state.games {
+                for guess in game.guesses {
+                    *guess_count.entry(guess).or_insert(0) += 1;
+                }
+            }
+        }
 
         // random init
         if args.random {
@@ -127,16 +159,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         // multiple rounds loop
+        let mut states: Vec<SingleGameState> = vec![];
         loop {
-            let (game, guesses, win) = if args.random {
-                let target = &final_set[day - 1];
-                used_words.push(target);
-                game_round(target, &args, &mut interface, &acceptable_set)
+            let target: String = if args.random {
+                final_set[day - 1].clone()
             } else {
                 let mut target = String::new();
                 io::stdin().read_line(&mut target)?;
-                game_round(&target, &args, &mut interface, &acceptable_set)
+                target.trim().to_string()
             };
+            let (game, guesses, win) = game_round(&target, &args, &mut interface, &acceptable_set);
 
             // statistics
             if args.stats {
@@ -145,7 +177,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 if win {
                     trials += game.trials;
                 }
-                for guess in guesses {
+                for guess in guesses.clone() {
                     *guess_count.entry(guess).or_insert(0) += 1;
                 }
                 // print top five words
@@ -154,6 +186,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .sort_by(|a, b| b.1.cmp(a.1)
                         .then(a.0.cmp(b.0)));
                 interface.print_stats(&top_five, wins, total, trials);
+            }
+
+            // save state
+            if let Some(path) = &args.state {
+                states.push(SingleGameState {
+                    answer: target.clone(),
+                    guesses: guesses.iter().map(|s| s.to_string()).collect(),
+                });
+                let json = serde_json::to_string(&GameState {
+                    total_rounds: total,
+                    games: states.clone(),
+                });
+                if let Ok(json) = json {
+                    std::fs::write(path, json)?;
+                }
             }
 
             // whether next round
