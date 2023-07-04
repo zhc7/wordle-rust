@@ -243,6 +243,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             day += 1;
         }
     } else {
+        assert!(args.seed.is_none());
+        assert_eq!(args.day, 1);
         game_round(&args.word.clone().unwrap(), &args, &mut interface, &acceptable_set);
     }
     Ok(())
