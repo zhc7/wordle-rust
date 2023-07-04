@@ -96,7 +96,10 @@ impl<'a> GameStatus<'a> {
             }
         }
         for (c, count) in yellow_count.iter() {
-            self.yellow_count.entry(*c).and_modify(|e| *e = max(*e, *count)).or_insert(*count);
+            self.yellow_count
+                .entry(*c)
+                .and_modify(|e| *e = max(*e, *count))
+                .or_insert(*count);
         }
         // red
         for (i, c) in word.chars().enumerate() {

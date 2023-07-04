@@ -132,7 +132,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         FINAL.iter().map(|s| String::from(*s)).collect()
     };
     // dataset operation
-    let mut final_set: Vec<String> = final_set.iter().map(|s| s.to_uppercase()).collect();
+    let mut final_set: Vec<String> = final_set
+        .iter()
+        .map(|s| s.to_uppercase())
+        .collect();
     final_set.sort();
     let acceptable_set: Vec<String> = if let Some(path) = &args.acceptable_set {
         std::fs::read_to_string(path)
@@ -143,7 +146,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         ACCEPTABLE.iter().map(|s| String::from(*s)).collect()
     };
-    let mut acceptable_set: Vec<String> = acceptable_set.iter().map(|s| s.to_uppercase()).collect();
+    let mut acceptable_set: Vec<String> = acceptable_set
+        .iter()
+        .map(|s| s.to_uppercase())
+        .collect();
     acceptable_set.sort();
     // check acceptable >= final
     let mut p = 0;
@@ -164,12 +170,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut states: Vec<SingleGameState> = vec![];
         if let Some(path) = &args.state {
             let loaded_states: GameState = serde_json::from_str(&std::fs::read_to_string(path)?)?;
-            wins = loaded_states.games.iter().filter(|g| g.guesses.len() == 5).count() as u32;
+            wins = loaded_states.games
+                .iter()
+                .filter(|g| g.guesses.len() == 5)
+                .count() as u32;
             total = loaded_states.total_rounds;
-            trials = loaded_states.games.iter().map(|g| g.guesses.len() as u32).sum();
+            trials = loaded_states.games
+                .iter()
+                .map(|g| g.guesses.len() as u32)
+                .sum();
             for game in loaded_states.games {
                 for guess in game.guesses.clone() {
-                    *guess_count.entry(guess).or_insert(0) += 1;
+                    *guess_count
+                        .entry(guess)
+                        .or_insert(0) += 1;
                 }
                 states.push(game);
             }
@@ -194,7 +208,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 io::stdin().read_line(&mut target)?;
                 target.trim().to_string()
             };
-            let (game, guesses, win) = game_round(&target, &args, &mut interface, &acceptable_set);
+            let (game, guesses, win) =
+                game_round(&target, &args, &mut interface, &acceptable_set);
 
             // statistics
             if args.stats {
@@ -209,8 +224,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 // print top five words
                 let mut top_five: Vec<(&String, &u32)> = guess_count.iter().collect();
                 top_five
-                    .sort_by(|a, b| b.1.cmp(a.1)
-                        .then(a.0.cmp(b.0)));
+                    .sort_by(|a, b|
+                        b.1.cmp(a.1).then(a.0.cmp(b.0)));
                 interface.print_stats(&top_five, wins, total, trials);
             }
 
