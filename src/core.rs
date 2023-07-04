@@ -1,8 +1,6 @@
 use std::cmp::{max, min};
 use std::collections::HashMap;
 
-use crate::builtin_words::ACCEPTABLE;
-
 const WORD_SIZE: usize = 5;
 const ALPHABET_SIZE: usize = 26;
 pub(crate) const BASE_CHAR: char = 'A';
@@ -33,7 +31,7 @@ pub enum Error {
     InvalidWord,
 }
 
-pub struct GameStatus {
+pub struct GameStatus<'a> {
     pub target: [char; WORD_SIZE],
     pub trials: u32,
     pub keyboard: [Status; ALPHABET_SIZE],
@@ -41,10 +39,11 @@ pub struct GameStatus {
     count: HashMap<char, u32>,
     green_place: [char; WORD_SIZE],
     yellow_count: HashMap<char, u32>,
+    acceptable: &'a Vec<String>,
 }
 
-impl GameStatus {
-    pub fn new(target: &str) -> Self {
+impl<'a> GameStatus<'a> {
+    pub fn new(target: &str, acceptable: &'a Vec<String>) -> Self {
         let target = target.to_uppercase();
         let mut map = HashMap::new();
         for c in target.chars() {
@@ -58,6 +57,7 @@ impl GameStatus {
             count: map,
             green_place: [0 as char; WORD_SIZE],
             yellow_count: HashMap::new(),
+            acceptable,
         }
     }
 
@@ -65,7 +65,7 @@ impl GameStatus {
         if word.len() != WORD_SIZE {
             return Err(Error::InvalidWordLength);
         }
-        if !ACCEPTABLE.contains(&word.to_lowercase().as_str()) {
+        if !self.acceptable.contains(&word.to_lowercase()) {
             return Err(Error::InvalidWord);
         }
         let word = word.to_uppercase();
@@ -115,7 +115,7 @@ impl GameStatus {
         if word.len() != WORD_SIZE {
             return Err(Error::InvalidWordLength);
         }
-        if !ACCEPTABLE.contains(&word.to_lowercase().as_str()) {
+        if !self.acceptable.contains(&word.to_lowercase()) {
             return Err(Error::InvalidWord);
         }
         let word = word.to_uppercase();

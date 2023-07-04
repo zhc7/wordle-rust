@@ -13,9 +13,14 @@ pub trait Interface {
 }
 
 
-pub fn run(interface: &mut Box<dyn Interface>, target: &str, difficult: bool) -> (GameStatus, Vec<String>, bool) {
+pub fn run<'a>(
+    interface: &mut Box<dyn Interface>,
+    target: &str,
+    difficult: bool,
+    acceptable_set: &'a Vec<String>,
+) -> (GameStatus<'a>, Vec<String>, bool) {
     interface.start(target);
-    let mut game = GameStatus::new(target);
+    let mut game = GameStatus::new(target, acceptable_set);
     let mut guesses: Vec<String> = Vec::new();
     while game.trials < MAX_TRIAL {
         let mut input = String::new();

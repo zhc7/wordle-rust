@@ -4,7 +4,7 @@ use std::io;
 use clap::Parser;
 use rand::seq::SliceRandom;
 
-use crate::builtin_words::FINAL;
+use crate::builtin_words::{ACCEPTABLE, FINAL};
 use crate::core::GameStatus;
 use crate::interface::{Interface, run};
 
@@ -52,24 +52,62 @@ struct Args {
 }
 
 
-fn game_round(target: &String, args: &Args, interface: &mut Box<dyn Interface>) -> (GameStatus, Vec<String>, bool) {
+fn game_round<'a>(
+    target: &String,
+    args: &Args,
+    interface: &mut Box<dyn Interface>,
+    acceptable_set: &'a Vec<String>,
+) -> (GameStatus<'a>, Vec<String>, bool) {
     assert!(FINAL.contains(&target.trim().to_lowercase().as_str()));
     let target = target.trim().to_uppercase();
     let target = target.as_str();
-    run(interface, target, args.difficult)
+    run(interface, target, args.difficult, acceptable_set)
 }
 
 
 /// The main function for the Wordle game, implement your own logic here
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // interface choosing
     let mut interface: Box<dyn Interface>;
-    if atty::is(atty::Stream::Stdout) && false {
+    if atty::is(atty::Stream::Stdout) {
         interface = Box::new(tty_interface::TTYInterface::new());
     } else {
         interface = Box::new(test_interface::TestInterface::new());
     }
+
+    // arg parsing
     let args = Args::parse();
     let mut day = args.day;
+    let final_set: Vec<String> = if let Some(path) = &args.final_set {
+        std::fs::read_to_string(path)
+            .unwrap()
+            .lines()
+            .map(String::from)
+            .collect()
+    } else {
+        FINAL.iter().map(|s| String::from(*s)).collect()
+    };
+    let mut final_set: Vec<String> = final_set.iter().map(|s| s.to_uppercase()).collect();
+    final_set.sort();
+    let acceptable_set: Vec<String> = if let Some(path) = &args.acceptable_set {
+        std::fs::read_to_string(path)
+            .unwrap()
+            .lines()
+            .map(String::from)
+            .collect()
+    } else {
+        ACCEPTABLE.iter().map(|s| String::from(*s)).collect()
+    };
+    let mut acceptable_set: Vec<String> = acceptable_set.iter().map(|s| s.to_uppercase()).collect();
+    acceptable_set.sort();
+    // check acceptable >= final
+    let mut p = 0;
+    for s in &final_set {
+        while p < acceptable_set.len() && &acceptable_set[p] != s { p += 1; }
+        assert!(p < acceptable_set.len(), "{} not contained in acceptable set", s);
+    }
+
+
     if args.word == None {
         // statistics
         let mut used_words: Vec<&str> = Vec::new();
@@ -79,30 +117,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut trials: u32 = 0;
 
         // random init
-        let v_tmp = FINAL
-            .iter()
-            .map(|s| String::from(*s))
-            .collect::<Vec<String>>();
-        let mut dict: Vec<&String> = v_tmp.iter().collect();
         if args.random {
             if let Some(seed) = args.seed {
                 let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(seed);
-                dict.shuffle(&mut rng);
+                final_set.shuffle(&mut rng);
             } else {
-                dict.shuffle(&mut rand::thread_rng());
+                final_set.shuffle(&mut rand::thread_rng());
             }
         }
 
         // multiple rounds loop
         loop {
             let (game, guesses, win) = if args.random {
-                let target = dict[day - 1];
+                let target = &final_set[day - 1];
                 used_words.push(target);
-                game_round(&target, &args, &mut interface)
+                game_round(target, &args, &mut interface, &acceptable_set)
             } else {
                 let mut target = String::new();
                 io::stdin().read_line(&mut target)?;
-                game_round(&target, &args, &mut interface)
+                game_round(&target, &args, &mut interface, &acceptable_set)
             };
 
             // statistics
@@ -117,7 +150,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 // print top five words
                 let mut top_five: Vec<(&String, &u32)> = guess_count.iter().collect();
-                top_five.sort_by(|a, b| b.1.cmp(a.1).then(a.0.cmp(b.0)));
+                top_five
+                    .sort_by(|a, b| b.1.cmp(a.1)
+                        .then(a.0.cmp(b.0)));
                 interface.print_stats(&top_five, wins, total, trials);
             }
 
@@ -135,7 +170,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             day += 1;
         }
     } else {
-        game_round(&args.word.clone().unwrap(), &args, &mut interface);
+        game_round(&args.word.clone().unwrap(), &args, &mut interface, &acceptable_set);
     }
     Ok(())
 }
