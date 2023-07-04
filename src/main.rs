@@ -161,16 +161,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut trials: u32 = 0;
 
         // load state
+        let mut states: Vec<SingleGameState> = vec![];
         if let Some(path) = &args.state {
-            let state: GameState = serde_json::from_str(&std::fs::read_to_string(path)?)?;
-            wins = state.games.iter().filter(|g| g.guesses.len() == 5).count() as u32;
-            total = state.total_rounds;
-            day += total as usize;
-            trials = state.games.iter().map(|g| g.guesses.len() as u32).sum();
-            for game in state.games {
-                for guess in game.guesses {
+            let loaded_states: GameState = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+            wins = loaded_states.games.iter().filter(|g| g.guesses.len() == 5).count() as u32;
+            total = loaded_states.total_rounds;
+            trials = loaded_states.games.iter().map(|g| g.guesses.len() as u32).sum();
+            for game in loaded_states.games {
+                for guess in game.guesses.clone() {
                     *guess_count.entry(guess).or_insert(0) += 1;
                 }
+                states.push(game);
             }
         }
 
@@ -185,7 +186,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         // multiple rounds loop
-        let mut states: Vec<SingleGameState> = vec![];
         loop {
             let target: String = if args.random {
                 final_set[day - 1].clone()
