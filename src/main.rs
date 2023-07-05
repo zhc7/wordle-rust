@@ -85,7 +85,10 @@ struct SingleGameState {
 
 #[derive(Serialize, Deserialize)]
 struct GameState {
+    #[serde(default)]
     total_rounds: u32,
+
+    #[serde(default)]
     games: Vec<SingleGameState>,
 }
 
