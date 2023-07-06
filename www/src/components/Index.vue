@@ -62,7 +62,7 @@
               </div>
             </v-col>
           </v-row>
-          <v-row justify="center" class="mb-0">
+          <v-row justify="center" class="mb-2">
             <v-btn
                 style="font-family: nyt-karnakcondensed; font-weight: 700; font-size: x-large;"
                 @click="replay"
@@ -78,7 +78,19 @@
       <v-col style="flex: none; width: 300px;">
         <v-row v-for="(word, i) in words">
           <v-col v-for="(letter, j) in word" class="pa-0 mr-1">
-            <v-sheet class="letter-box" :class="words_status[i][j]">
+            <v-sheet class="letter-box"
+                     :class="[words_status[i][j],
+                     {
+                       AnimateShake: animation[i][j] === 1,
+                       AnimateBounce: animation[i][j] === 2,
+                       AnimatePopIn: animation[i][j] === 3,
+                     }
+                     ]"
+                     @animationend="animationEndHandler(i, j)"
+                     :style="{
+                       borderColor: letter === '' ? '' : '#878a8c',
+                     }"
+            >
               {{ letter }}
             </v-sheet>
           </v-col>
@@ -97,7 +109,8 @@
         </v-row>
         <v-row class="justify-center d-flex">
           <div class="d-flex mr-1">
-            <v-btn variant="tonal" size="large" height="58px" class="keyboard-key" style="width: 12vw; max-width: 75px; font-size: 70%"
+            <v-btn variant="tonal" size="large" height="58px" class="keyboard-key"
+                   style="width: 12vw; max-width: 75px; font-size: 70%"
                    @click="enter">
               Enter
             </v-btn>
@@ -142,6 +155,14 @@ export default {
         ['', '', '', '', ''],
         ['', '', '', '', '']
       ],
+      animation: [
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+      ],
       words_status: [
         ['X', 'X', 'X', 'X', 'X'],
         ['X', 'X', 'X', 'X', 'X'],
@@ -184,6 +205,9 @@ export default {
     },
 
     message(str) {
+      for (let i = 0; i < 5; i++) {
+        this.triggerAnimation(this.row_ptr, i, 1)
+      }
       this.text = str
       this.snackbar = true
     },
@@ -244,6 +268,7 @@ export default {
     press_key(key) {
       if (this.col_ptr < 5) {
         this.words[this.row_ptr][this.col_ptr] = key.toUpperCase()
+        this.triggerAnimation(this.row_ptr, this.col_ptr, 3)
         this.col_ptr++
       }
     },
@@ -281,6 +306,17 @@ export default {
       if (event.key === 'Enter') {
         this.enter()
       }
+    },
+
+    triggerAnimation(i, j, a) {
+      this.animation[i][j] = 0
+      this.$nextTick(() => {
+        this.animation[i][j] = a
+      })
+    },
+
+    animationEndHandler(i, j) {
+      this.animation[i][j] = 0
     }
   },
 
@@ -316,6 +352,54 @@ export default {
   40%, 60% {
     transform: translateX(4px);
   }
+}
+
+@keyframes Bounce {
+  0%,
+  20% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-30px);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+  80% {
+    transform: translateY(2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes PopIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  40% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+.AnimateShake {
+  animation: Shake 0.82s;
+}
+
+.AnimateBounce {
+  animation: Bounce 0.5s;
+}
+
+.AnimatePopIn {
+  animation-name: PopIn;
+  animation-duration: 0.13s;
+  animation-timing-function: ease-in;
 }
 
 .R {
