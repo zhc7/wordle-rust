@@ -89,7 +89,7 @@
       <v-col>
         <v-row v-for="line in keyboard.slice(0, 2)" class="mb-2 justify-center">
           <div v-for="key in line" class="d-flex mr-1">
-            <v-btn variant="tonal" size="small" height="58px" style="font-size: 1.25rem" class="font-weight-bold"
+            <v-btn variant="tonal" size="small" height="58px" class="keyboard-key"
                    @click="press_key(key)" :class="keyboard_status[ind(key)]">
               {{ key }}
             </v-btn>
@@ -97,19 +97,19 @@
         </v-row>
         <v-row class="justify-center d-flex">
           <div class="d-flex mr-1">
-            <v-btn variant="tonal" size="large" height="58px" style="font-size: 12px" class="font-weight-bold"
+            <v-btn variant="tonal" size="large" height="58px" class="keyboard-key" style="width: 12vw; max-width: 75px; font-size: 70%"
                    @click="enter">
               Enter
             </v-btn>
           </div>
           <div v-for="key in keyboard[2]" class="d-flex mr-1">
-            <v-btn variant="tonal" size="small" height="58px" style="font-size: 1.25rem" class="font-weight-bold"
+            <v-btn variant="tonal" size="small" height="58px" class="keyboard-key"
                    @click="press_key(key)" :class="keyboard_status[ind(key)]">
               {{ key }}
             </v-btn>
           </div>
           <div class="d-flex mr-1">
-            <v-btn variant="tonal" size="large" height="58px" style="font-size: 1.25rem" class="font-weight-bold"
+            <v-btn variant="tonal" size="large" height="58px" class="keyboard-key" style="width: 12vw; max-width: 75px"
                    @click="backspace">
               <v-icon icon="mdi-backspace-outline"></v-icon>
             </v-btn>
@@ -353,5 +353,21 @@ export default {
   content: "";
   display: inline-block;
   padding-bottom: 100%;
+}
+
+.keyboard-key {
+  font-size: 1.25rem;
+  font-weight: bold;
+  letter-spacing: unset !important;
+  min-width: unset !important;
+  width: 8vw;
+  max-width: 50px;
+  max-height: 12vw !important;
+}
+
+@media (max-width: 400px) {
+  .keyboard-key {
+    font-size: 1rem;
+  }
 }
 </style>
