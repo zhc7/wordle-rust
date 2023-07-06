@@ -156,9 +156,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     acceptable_set.sort();
     // check acceptable >= final
     let mut p = 0;
+    let mut last = &"".to_string();
     for s in &final_set {
+        assert_ne!(s, last, "duplication in final set");
         while p < acceptable_set.len() && &acceptable_set[p] != s { p += 1; }
         assert!(p < acceptable_set.len(), "{} not contained in acceptable set", s);
+        last = s;
+    }
+    let mut last = &"".to_string();
+    for s in &acceptable_set {
+        assert_ne!(s, last, "duplication in acceptable set");
+        last = s;
     }
 
 
