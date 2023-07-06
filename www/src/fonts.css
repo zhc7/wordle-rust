@@ -1,0 +1,9 @@
+@font-face {
+  font-family: "nyt-karnakcondensed";
+  src: url("/fonts/nyt-karnakcondensed.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "nyt-franklin";
+  src: url("/fonts/franklin-normal-700.woff2") format("woff2");
+}

@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "vue": "^3.2.47",
+    "vuetify": "^3.0.3",
     "wordle": "file:../pkg"
   },
   "devDependencies": {
+    "@mdi/font": "^7.2.96",
     "@vitejs/plugin-vue": "^4.1.0",
     "vite": "^4.3.9",
     "vite-plugin-wasm": "^3.2.2"
