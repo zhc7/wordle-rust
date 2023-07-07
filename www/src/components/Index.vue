@@ -84,6 +84,7 @@
                        AnimateShake: animation[i][j] === 1,
                        AnimateBounce: animation[i][j] === 2,
                        AnimatePopIn: animation[i][j] === 3,
+                       AnimateFlipIn: animation[i][j] === 4,
                      }
                      ]"
                      @animationend="animationEndHandler(i, j)"
@@ -130,6 +131,7 @@
         </v-row>
       </v-col>
     </v-row>
+    {{ answer }}
   </v-container>
 </template>
 
@@ -186,6 +188,9 @@ export default {
       total: 0,
       trials: 0,
       top_words: [],
+      animating: false,
+      answer: "",
+      end_game: false,
     }
   },
 
@@ -202,6 +207,7 @@ export default {
       this.keyboard_status = Array(26).fill("X")
       this.runner.start()
       this.dialog = false
+      this.end_game = false
     },
 
     message(str) {
@@ -233,6 +239,7 @@ export default {
     },
 
     enter() {
+      this.animating = true;
       if (this.col_ptr < 5) {
         this.message('Not enough letters')
       } else {
@@ -247,17 +254,37 @@ export default {
         }
         let result = this.runner.guess(guess)
         if (result.length === 5) {
-          this.words_status[this.row_ptr] = result.split('')
           this.row_ptr++
           this.col_ptr = 0
           for (let i = 0; i < 5; i++) {
             console.log(guess.charCodeAt(i) - 'A'.charCodeAt(0))
-            this.keyboard_status[this.ind(guess[i])] = result[i]
+            setTimeout(() => {
+              this.triggerAnimation(this.row_ptr - 1, i, 4)
+              setTimeout(() => {
+                this.keyboard_status[this.ind(guess[i])] = result[i]
+                this.words_status[this.row_ptr - 1][i] = result[i]
+                if (i === 4) {
+                  this.animating = false;
+                }
+              }, 250)
+            }, 450 * i)
           }
           let status = this.runner.status()
           if (status === 1 || status === 2) {
+            this.end_game = true
             this.runner.end()
-            this.stats()
+            let delay = 450 * 4 + 500
+            if (status === 1) {
+              for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                  this.triggerAnimation(this.row_ptr - 1, i, 2)
+                }, 150 * i + delay)
+              }
+              delay += 4 * 150 + 1000
+            }
+            setTimeout(() => {
+              this.stats()
+            }, delay)
           }
         } else {
           this.message(result)
@@ -266,7 +293,7 @@ export default {
     },
 
     press_key(key) {
-      if (this.col_ptr < 5) {
+      if (this.col_ptr < 5 && this.row_ptr < 6 && !this.animating && !this.end_game) {
         this.words[this.row_ptr][this.col_ptr] = key.toUpperCase()
         this.triggerAnimation(this.row_ptr, this.col_ptr, 3)
         this.col_ptr++
@@ -388,17 +415,32 @@ export default {
   }
 }
 
+@keyframes FlipIn {
+  0%, 100% {
+    transform: rotateX(0);
+  }
+  50% {
+    transform: rotateX(-90deg);
+  }
+}
+
 .AnimateShake {
   animation: Shake 0.82s;
 }
 
 .AnimateBounce {
-  animation: Bounce 0.5s;
+  animation: Bounce 1s;
 }
 
 .AnimatePopIn {
   animation-name: PopIn;
   animation-duration: 0.13s;
+  animation-timing-function: ease-in;
+}
+
+.AnimateFlipIn {
+  animation-name: FlipIn;
+  animation-duration: 0.5s;
   animation-timing-function: ease-in;
 }
 
