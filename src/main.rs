@@ -108,14 +108,6 @@ fn game_round<'a>(
 
 /// The main function for the Wordle game, implement your own logic here
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let tttt: HashMap<String, u32> = None
-        .unwrap_or("".to_string())
-        .split(",")
-        .map(|s| {
-            let mut iter = s.split(":");
-            (iter.next().unwrap().to_string(), iter.next().unwrap().parse().unwrap())
-        }).collect();
-
     // interface choosing
     let mut interface: Box<dyn Interface>;
     if atty::is(atty::Stream::Stdout) {
