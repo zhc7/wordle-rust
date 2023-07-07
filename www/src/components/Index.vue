@@ -65,7 +65,8 @@
               </div>
             </v-col>
             <v-col>
-              <div v-for="word in top_words" style="text-align: center; font-family: nyt-karnakcondensed; font-weight: bold">
+              <div v-for="word in top_words"
+                   style="text-align: center; font-family: nyt-karnakcondensed; font-weight: bold">
                 {{ word[1] }}
               </div>
             </v-col>
@@ -268,11 +269,11 @@ export default {
           this.col_ptr = 0
           for (let i = 0; i < 5; i++) {
             console.log(guess.charCodeAt(i) - 'A'.charCodeAt(0))
+            let ord = ["G", "Y", "R", "X"]
             if (!this.lightning) {
               setTimeout(() => {
                 this.triggerAnimation(this.row_ptr - 1, i, 4)
                 setTimeout(() => {
-                  let ord = ["G", "Y", "R", "X"]
                   if (ord.indexOf(this.keyboard_status[this.ind(guess[i])]) > ord.indexOf(result[i])) {
                     this.keyboard_status[this.ind(guess[i])] = result[i]
                   }
@@ -283,7 +284,9 @@ export default {
                 }, 250)
               }, 450 * i)
             } else {
-              this.keyboard_status[this.ind(guess[i])] = result[i]
+              if (ord.indexOf(this.keyboard_status[this.ind(guess[i])]) > ord.indexOf(result[i])) {
+                this.keyboard_status[this.ind(guess[i])] = result[i]
+              }
               this.words_status[this.row_ptr - 1][i] = result[i]
             }
           }
