@@ -116,4 +116,8 @@ impl Runner {
             0
         }
     }
+
+    pub fn answer(&self) -> String {
+        self.game.target.iter().collect()
+    }
 }
