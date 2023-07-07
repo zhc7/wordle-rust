@@ -6,6 +6,7 @@
 @font-face {
   font-family: "nyt-franklin";
   src: url("/fonts/franklin-normal-700.woff2") format("woff2");
+  font-weight: 700;
 }
 
 @font-face {
