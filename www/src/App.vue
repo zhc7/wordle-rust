@@ -4,12 +4,13 @@ import Index from "./components/Index.vue";
 
 const index = ref(null)
 
-const theme = ref('light')
+const theme = ref(localStorage.getItem("theme") || "light")
 const isHard = ref(false)
 const isLightning = ref(false)
 
 function onClick() {
   theme.value = theme.value === 'light' ? 'dark' : 'light'
+  localStorage.setItem("theme", theme.value)
 }
 
 const onShowStats = () => {
