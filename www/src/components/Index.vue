@@ -272,7 +272,10 @@ export default {
               setTimeout(() => {
                 this.triggerAnimation(this.row_ptr - 1, i, 4)
                 setTimeout(() => {
-                  this.keyboard_status[this.ind(guess[i])] = result[i]
+                  let ord = ["G", "Y", "R", "X"]
+                  if (ord.indexOf(this.keyboard_status[this.ind(guess[i])]) > ord.indexOf(result[i])) {
+                    this.keyboard_status[this.ind(guess[i])] = result[i]
+                  }
                   this.words_status[this.row_ptr - 1][i] = result[i]
                   if (i === 4) {
                     this.animating = false;
