@@ -180,7 +180,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // load state
         let mut states: Vec<SingleGameState> = vec![];
         if let Some(path) = &args.state {
-            let loaded_states: GameState = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+            let read_json = &std::fs::read_to_string(path).unwrap_or("{}".to_string());
+            let loaded_states: GameState = serde_json::from_str(read_json)?;
             wins = loaded_states.games
                 .iter()
                 .filter(|g| g.guesses.last() == Some(&g.answer))
