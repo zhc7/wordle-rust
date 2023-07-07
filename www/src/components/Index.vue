@@ -15,49 +15,57 @@
             <v-icon @click="dialog = false">mdi-close</v-icon>
           </v-row>
           <v-row>
-          <span style="font-weight: 700; font-size: large;">
+          <span style="font-family: nyt-karnakcondensed; font-weight: 700; font-size: x-large;">
             STATISTICS
           </span>
           </v-row>
           <v-row>
             <v-col>
-              <div>
-                Wins
-              </div>
-              <div>
+              <div class="stat-num">
                 {{ wins }}
               </div>
+              <div class="stat-label">
+                Wins
+              </div>
             </v-col>
             <v-col>
-              <div>
-                Losses
-              </div>
-              <div>
+              <div class="stat-num">
                 {{ total - wins }}
               </div>
+              <div class="stat-label">
+                Losses
+              </div>
             </v-col>
             <v-col>
-              <div>
-                Win Rate
+              <div class="stat-num">
+                {{ Math.round(total === 0 ? 0 : 1000.0 * wins / total) / 10 }}
               </div>
-              <div>
-                {{ total === 0 ? 0 : 100.0 * wins / total }} %
+              <div class="stat-label">
+                Win Rate %
+              </div>
+            </v-col>
+            <v-col>
+              <div class="stat-num">
+                {{ Math.round(total === 0 ? 0 : 10.0 * trials / total) / 10 }}
+              </div>
+              <div class="stat-label">
+                Average Trials
               </div>
             </v-col>
           </v-row>
           <v-row>
-          <span style="font-weight: 700; font-size: large;">
+          <span style="font-family: nyt-karnakcondensed; font-weight: 700; font-size: x-large;">
             TOP WORDS
           </span>
           </v-row>
           <v-row>
             <v-col>
-              <div v-for="word in top_words">
+              <div v-for="word in top_words" style="text-align: center; font-family: nyt-karnakcondensed">
                 {{ word[0] }}
               </div>
             </v-col>
             <v-col>
-              <div v-for="word in top_words">
+              <div v-for="word in top_words" style="text-align: center; font-family: nyt-karnakcondensed; font-weight: bold">
                 {{ word[1] }}
               </div>
             </v-col>
@@ -144,7 +152,8 @@ export default {
   expose: ['stats'],
 
   props: {
-    hard: Boolean
+    hard: Boolean,
+    lightning: Boolean,
   },
 
   data() {
@@ -208,6 +217,7 @@ export default {
       this.runner.start()
       this.dialog = false
       this.end_game = false
+      // this.answer = this.runner.answer();
     },
 
     message(str) {
@@ -239,7 +249,6 @@ export default {
     },
 
     enter() {
-      this.animating = true;
       if (this.col_ptr < 5) {
         this.message('Not enough letters')
       } else {
@@ -254,20 +263,26 @@ export default {
         }
         let result = this.runner.guess(guess)
         if (result.length === 5) {
+          if (!this.lightning) this.animating = true;
           this.row_ptr++
           this.col_ptr = 0
           for (let i = 0; i < 5; i++) {
             console.log(guess.charCodeAt(i) - 'A'.charCodeAt(0))
-            setTimeout(() => {
-              this.triggerAnimation(this.row_ptr - 1, i, 4)
+            if (!this.lightning) {
               setTimeout(() => {
-                this.keyboard_status[this.ind(guess[i])] = result[i]
-                this.words_status[this.row_ptr - 1][i] = result[i]
-                if (i === 4) {
-                  this.animating = false;
-                }
-              }, 250)
-            }, 450 * i)
+                this.triggerAnimation(this.row_ptr - 1, i, 4)
+                setTimeout(() => {
+                  this.keyboard_status[this.ind(guess[i])] = result[i]
+                  this.words_status[this.row_ptr - 1][i] = result[i]
+                  if (i === 4) {
+                    this.animating = false;
+                  }
+                }, 250)
+              }, 450 * i)
+            } else {
+              this.keyboard_status[this.ind(guess[i])] = result[i]
+              this.words_status[this.row_ptr - 1][i] = result[i]
+            }
           }
           let status = this.runner.status()
           if (status === 1 || status === 2) {
@@ -275,12 +290,16 @@ export default {
             this.runner.end()
             let delay = 450 * 4 + 500
             if (status === 1) {
-              for (let i = 0; i < 5; i++) {
-                setTimeout(() => {
-                  this.triggerAnimation(this.row_ptr - 1, i, 2)
-                }, 150 * i + delay)
+              if (!this.lightning) {
+                for (let i = 0; i < 5; i++) {
+                  setTimeout(() => {
+                    this.triggerAnimation(this.row_ptr - 1, i, 2)
+                  }, 150 * i + delay)
+                }
+                delay += 4 * 150 + 1000
+              } else {
+                delay = 0
               }
-              delay += 4 * 150 + 1000
             }
             setTimeout(() => {
               this.stats()
@@ -350,6 +369,7 @@ export default {
   mounted() {
     this.runner = wordle.Runner.new();
     this.runner.start();
+    // this.answer = this.runner.answer();
   },
 
   created() {
@@ -495,5 +515,19 @@ export default {
   .keyboard-key {
     font-size: 1rem;
   }
+}
+
+.stat-num {
+  font-family: nyt-karnakcondensed;
+  font-size: 2rem;
+  margin-right: 0.5rem;
+}
+
+.stat-label {
+  font-family: nyt-franklin;
+  font-size: 1rem;
+  font-weight: normal;
+  margin-right: 1rem;
+  color: #787c7e;
 }
 </style>

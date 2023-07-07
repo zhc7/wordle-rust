@@ -6,6 +6,7 @@ const index = ref(null)
 
 const theme = ref('light')
 const isHard = ref(false)
+const isLightning = ref(false)
 
 function onClick() {
   theme.value = theme.value === 'light' ? 'dark' : 'light'
@@ -13,6 +14,10 @@ function onClick() {
 
 const onShowStats = () => {
   index.value.stats()
+}
+
+const onLightning = () => {
+  isLightning.value = !isLightning.value
 }
 </script>
 
@@ -46,6 +51,13 @@ const onShowStats = () => {
               </template>
             </v-switch>
             <v-icon
+              @click="onLightning"
+              icon="mdi-lightning-bolt"
+              size="x-large"
+              class="mr-5"
+              :color="isLightning ? 'amber' : ''"
+            />
+            <v-icon
                 @click="onShowStats"
                 icon="mdi-chart-bar"
                 size="x-large"
@@ -63,7 +75,7 @@ const onShowStats = () => {
     </v-app-bar>
 
     <v-main>
-      <Index :hard="isHard" ref="index"/>
+      <Index :hard="isHard" :lightning="isLightning" ref="index"/>
     </v-main>
   </v-app>
 </template>
