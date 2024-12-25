@@ -46,7 +46,7 @@
             </v-col>
             <v-col>
               <div class="stat-num">
-                {{ Math.round(total === 0 ? 0 : 10.0 * trials / total) / 10 }}
+                {{ Math.round(wins === 0 ? 0 : 10.0 * trials / wins) / 10 }}
               </div>
               <div class="stat-label">
                 Average Trials
@@ -218,7 +218,7 @@ export default {
       this.runner.start()
       this.dialog = false
       this.end_game = false
-      // this.answer = this.runner.answer();
+      this.answer = this.runner.answer();
     },
 
     message(str) {
@@ -250,6 +250,10 @@ export default {
     },
 
     enter() {
+      if (this.end_game && this.dialog) {
+        this.replay()
+        return;
+      }
       if (this.col_ptr < 5) {
         this.message('Not enough letters')
       } else {
@@ -291,10 +295,11 @@ export default {
             }
           }
           let status = this.runner.status()
+          console.log(status)
           if (status === 1 || status === 2) {
             this.end_game = true
             this.runner.end()
-            let delay = 450 * 4 + 500
+            let delay = this.lightning ? 0 : 450 * 4 + 500
             if (status === 1) {
               if (!this.lightning) {
                 for (let i = 0; i < 5; i++) {
@@ -306,6 +311,9 @@ export default {
               } else {
                 delay = 0
               }
+            } else if (status === 2) {
+              this.message(this.answer)
+              delay += 1000
             }
             setTimeout(() => {
               this.stats()
@@ -361,6 +369,7 @@ export default {
     },
 
     triggerAnimation(i, j, a) {
+      if (i >= 6 || j >= 5) return;
       this.animation[i][j] = 0
       this.$nextTick(() => {
         this.animation[i][j] = a
@@ -375,7 +384,7 @@ export default {
   mounted() {
     this.runner = wordle.Runner.new();
     this.runner.start();
-    // this.answer = this.runner.answer();
+    this.answer = this.runner.answer();
   },
 
   created() {

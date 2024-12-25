@@ -98,9 +98,9 @@ impl Runner {
     }
 
     pub fn end(&mut self) {
-        self.trials += 1;
         if self.game.end {
             self.wins += 1;
+            self.trials += self.game.trials;
         }
         self.total += 1;
         self.local_storage.set_item("wins_", &self.wins.to_string()).unwrap();
